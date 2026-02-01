@@ -131,17 +131,22 @@
     <script>
         // ########## 已配置你的Replit后端WSS地址，无需修改 ##########
         // 初始化聊天历史记录数组
+// 初始化聊天历史记录数组
 let chatHistory = [];
-// 页面加载时，从本地读取历史记录并显示
+// 页面加载时【合并执行】：读取历史记录 + 初始化WebSocket（解决重复onload冲突）
 window.onload = function() {
+  // 1. 读取本地历史记录并渲染
   const savedHistory = localStorage.getItem('chatHistory');
   if (savedHistory) {
     chatHistory = JSON.parse(savedHistory);
-    // 把历史记录逐条显示到页面上
     chatHistory.forEach(item => {
       addMessage(item.content, item.type);
     });
   }
+  // 2. 初始化WebSocket连接（原重复onload的功能，合并到这里）
+  initWebSocket();
+  // 3. 页面加载后聚焦输入框
+  msgInput.focus();
 };
         const WS_URL = "wss://couple-chat-backend--zhangyuxiaowan1.replit.app";
         // #######################################################
@@ -197,8 +202,9 @@ window.onload = function() {
 
         // 向聊天框添加消息（区分发送/接收）
        // 添加消息到页面 + 同时保存到本地历史
+// 添加消息到页面 + 同时保存到本地历史（修复：容器ID改为正确的chat-box）
 function addMessage(content, type) {
-  const chatContainer = document.getElementById('chat-container');
+  const chatContainer = document.getElementById('chat-box'); // 关键：改chat-container为chat-box
   const messageDiv = document.createElement('div');
   // 设置消息样式（自己发的send/蓝色，接收的receive/灰色）
   messageDiv.className = `message ${type}`;
@@ -258,12 +264,6 @@ function addMessage(content, type) {
                 sendMessage();
             }
         });
-
-        // 页面加载完成后，初始化WebSocket连接
-        window.onload = () => {
-            initWebSocket();
-            msgInput.focus(); // 页面加载后直接聚焦输入框
-        };
 
         // 页面关闭/刷新时，主动关闭WebSocket连接（避免后端异常）
         window.onbeforeunload = () => {
