@@ -154,10 +154,18 @@
             };
 
             // 接收后端消息回调
-            ws.onmessage = (e) => {
-                addMessage(e.data, 'receive'); // 展示接收的消息
-                scrollToBottom(); // 自动滚动到最新消息
-            };
+           ws.onmessage = (e) => {
+    // 处理Blob类型的消息，转成字符串
+    if (e.data instanceof Blob) {
+        e.data.text().then(text => {
+            addMessage(text, 'receive');
+            scrollToBottom();
+        });
+    } else {
+        addMessage(e.data, 'receive');
+        scrollToBottom();
+    }
+};
 
             // 连接关闭回调（非主动关闭则自动重连）
             ws.onclose = (e) => {
