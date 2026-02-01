@@ -130,6 +130,19 @@
 
     <script>
         // ########## 已配置你的Replit后端WSS地址，无需修改 ##########
+        // 初始化聊天历史记录数组
+let chatHistory = [];
+// 页面加载时，从本地读取历史记录并显示
+window.onload = function() {
+  const savedHistory = localStorage.getItem('chatHistory');
+  if (savedHistory) {
+    chatHistory = JSON.parse(savedHistory);
+    // 把历史记录逐条显示到页面上
+    chatHistory.forEach(item => {
+      addMessage(item.content, item.type);
+    });
+  }
+};
         const WS_URL = "wss://couple-chat-backend--zhangyuxiaowan1.replit.app";
         // #######################################################
 
@@ -183,12 +196,21 @@
         }
 
         // 向聊天框添加消息（区分发送/接收）
-        function addMessage(text, type) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `msg ${type}`;
-            msgDiv.innerText = text;
-            chatBox.appendChild(msgDiv);
-        }
+       // 添加消息到页面 + 同时保存到本地历史
+function addMessage(content, type) {
+  const chatContainer = document.getElementById('chat-container');
+  const messageDiv = document.createElement('div');
+  // 设置消息样式（自己发的send/蓝色，接收的receive/灰色）
+  messageDiv.className = `message ${type}`;
+  messageDiv.innerText = content;
+  chatContainer.appendChild(messageDiv);
+  // 自动滚动到最新消息
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  // 关键：把消息保存到历史数组，再同步到本地存储
+  chatHistory.push({ content: content, type: type });
+  localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+}
 
         // 向聊天框添加系统提示（如重连、错误信息）
         function addAlert(text) {
